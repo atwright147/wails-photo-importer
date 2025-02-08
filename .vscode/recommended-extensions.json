@@ -1,0 +1,9 @@
+
+{
+  "recommendations": [
+    "biomejs.biome",
+    "editorconfig.editorconfig",
+    "golang.go",
+    "vitest.explorer"
+  ]
+}

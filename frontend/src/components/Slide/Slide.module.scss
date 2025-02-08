@@ -1,0 +1,29 @@
+.slideContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  input[type='checkbox'] {
+    display: none;
+  }
+}
+
+input:checked + .slide {
+  border: 1px solid var(--spectrum-global-color-blue-600);
+}
+
+.slide {
+  border: 1px solid var(--spectrum-global-color-gray-300);
+  border-radius: var(--spectrum-global-dimension-size-75);
+  overflow: hidden;
+  padding: var(--spectrum-global-dimension-size-200);
+  background-color: var(--spectrum-global-color-gray-200);
+}
+
+.figure {
+  margin: 0;
+}
+
+.figcaption {
+  text-align: center;
+}

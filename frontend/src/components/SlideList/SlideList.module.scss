@@ -1,0 +1,11 @@
+.slideList {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spectrum-global-dimension-size-200);
+}
+
+.listItem {
+  width: min-content;
+}

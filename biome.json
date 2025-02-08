@@ -1,0 +1,33 @@
+{
+	"$schema": "https://biomejs.dev/schemas/1.4.1/schema.json",
+	"organizeImports": {
+		"enabled": true
+	},
+	"linter": {
+		"ignore": [".vscode", "tsconfig*.json", "wailsjs", "node_modules", "build"],
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"correctness": {
+				"useExhaustiveDependencies": {
+					"level": "warn"
+				},
+				"useHookAtTopLevel": {
+					"level": "error"
+				}
+			}
+		}
+	},
+	"formatter": {
+		"ignore": [".vscode", "tsconfig*.json", "package*.json", "wailsjs", "build"],
+		"enabled": true,
+		"indentStyle": "tab",
+		"indentWidth": 2
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "single",
+			"jsxQuoteStyle": "double"
+		}
+	}
+}

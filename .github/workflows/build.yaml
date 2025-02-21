@@ -1,0 +1,42 @@
+name: Build
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  macos-universal:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: dAppServer/wails-build-action@main
+        with:
+          build-name: photo-importer
+          build-platform: darwin/universal
+          sign: false
+          package: true
+          wails-version: 'v2.9.3'
+      - name: Debug
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
+
+  windows-amd64:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: dAppServer/wails-build-action@main
+        with:
+          build-name: photo-importer.exe
+          build-platform: windows/amd64
+          wails-build-webview2: "embed"
+          nsis: false
+          package: true
+          wails-version: 'v2.9.3'
+      - name: Debug
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3

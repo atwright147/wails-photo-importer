@@ -1,6 +1,6 @@
 {
 	"$schema": "https://wails.io/schemas/config.v2.json",
-	"name": "Photo Importer",
+	"name": "photo-importer",
 	"outputfilename": "photo-importer",
 	"frontend:install": "npm ci",
 	"frontend:build": "npm run build",

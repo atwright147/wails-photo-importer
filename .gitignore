@@ -4,3 +4,5 @@ frontend/dist
 frontend/wailsjs
 .DS_Store
 /build/
+/assets/
+/downloads/

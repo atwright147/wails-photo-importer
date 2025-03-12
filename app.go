@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -17,6 +18,8 @@ import (
 	"github.com/wailsapp/mimetype"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
+
+var exiftool_path string
 
 // App struct
 type App struct {
@@ -32,6 +35,20 @@ func NewApp() *App {
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
+
+	exiftoolPath, err := extractPlatformSpecificExiftool()
+	if err != nil {
+		log.Fatalf("Failed to extract exiftool: %v", err)
+	}
+
+	exiftool_path = exiftoolPath
+}
+
+func (a *App) shutdown(ctx context.Context) {
+	// Clean up the extracted exiftool
+	if exiftool_path != "" {
+		os.Remove(exiftool_path)
+	}
 }
 
 var (

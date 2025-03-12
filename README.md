@@ -4,13 +4,14 @@ Open source utility to import photos from removable media.
 
 ## Features
 
-- Lists removable media
-- Lists all images on media
-- Select which photos to import
-- Divides images into folders by date
-- Configurable folder date pattern
-- Convert to DNG (if Adobe DNG Converter is installed)
-- Configure DNG Converter settings
+- [x] Lists removable media
+- [x] Lists all images on media
+- [x] Select which photos to import
+- [x] Divides images into folders by date
+- [x] Configurable folder date pattern
+- [x] Convert to DNG (if Adobe DNG Converter is installed)
+- [x] Configure DNG Converter settings
+- [x] Uses embedded EXIFTool
 
 ## Screenshot
 

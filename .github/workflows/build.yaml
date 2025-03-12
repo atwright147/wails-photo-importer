@@ -13,7 +13,7 @@ jobs:
         with:
           submodules: recursive
       - name: Download Exiftool
-        run: ./download.sh
+        run: ./scripts/download.sh
       - uses: dAppServer/wails-build-action@main
         with:
           build-name: photo-importer
@@ -33,7 +33,7 @@ jobs:
           submodules: recursive
       - name: Download Exiftool
         shell: powershell
-        run: .\download.ps1
+        run: .\scripts\download.ps1
       - uses: dAppServer/wails-build-action@main
         with:
           build-name: photo-importer.exe

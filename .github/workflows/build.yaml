@@ -12,6 +12,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+      - name: Download Exiftool
+        run: ./download.sh
       - uses: dAppServer/wails-build-action@main
         with:
           build-name: photo-importer
@@ -29,6 +31,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+      - name: Download Exiftool
+        shell: powershell
+        run: .\download.ps1
       - uses: dAppServer/wails-build-action@main
         with:
           build-name: photo-importer.exe

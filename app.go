@@ -252,7 +252,7 @@ func (a *App) ExtractThumbnail(path string) (ThumbnailResponse, error) {
 	}
 
 	// Extract thumbnail using exiftool
-	cmd := exec.Command("exiftool",
+	cmd := exec.Command(exiftool_path,
 		"-thumbnailimage",
 		"-b",
 		"-w",

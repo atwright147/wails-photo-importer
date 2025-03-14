@@ -7,12 +7,18 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/mac"
 
 	wailsconfigstore "github.com/AndreiTelteu/wails-configstore"
 )
 
 //go:embed all:frontend/dist
 var assets embed.FS
+
+//go:embed build/appicon.png
+var icon []byte
+
+const APP_NAME = "Photo Importer"
 
 func main() {
 	// Create an instance of the app structure
@@ -26,7 +32,7 @@ func main() {
 
 	// Create application with options
 	err = wails.Run(&options.App{
-		Title:  "Photo-Importer",
+		Title:  "Photo Importer",
 		Width:  1024,
 		Height: 768,
 		AssetServer: &assetserver.Options{
@@ -38,6 +44,13 @@ func main() {
 		Bind: []interface{}{
 			app,
 			configStore,
+		},
+		Mac: &mac.Options{
+			About: &mac.AboutInfo{
+				Title:   APP_NAME,
+				Message: "A modern photo importer application.",
+				Icon:    icon,
+			},
 		},
 	})
 

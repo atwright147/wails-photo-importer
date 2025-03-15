@@ -3,8 +3,11 @@ package main
 import (
 	"embed"
 	"fmt"
+	"runtime"
 
 	"github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/menu"
+	"github.com/wailsapp/wails/v2/pkg/menu/keys"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
@@ -30,6 +33,28 @@ func main() {
 		return
 	}
 
+	// menu
+	isMacOS := runtime.GOOS == "darwin"
+	customMenu := menu.NewMenu()
+
+	// Create application menu
+	fileMenu := customMenu.AddSubmenu("File")
+	fileMenu.AddText("Select All", keys.CmdOrCtrl("a"), func(_ *menu.CallbackData) {
+		// Call a bound Go method that will execute JavaScript code
+		app.selectAll()
+	})
+	fileMenu.AddText("Deselect All", keys.CmdOrCtrl("d"), func(_ *menu.CallbackData) {
+		// Call a bound Go method that will execute JavaScript code
+		app.selectNone()
+	})
+
+	customMenu.Append(menu.EditMenu())
+	customMenu.Append(menu.WindowMenu())
+
+	if isMacOS {
+		customMenu.Prepend(menu.AppMenu())
+	}
+
 	// Create application with options
 	err = wails.Run(&options.App{
 		Title:  "Photo Importer",
@@ -41,6 +66,7 @@ func main() {
 		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
 		OnStartup:        app.startup,
 		OnShutdown:       app.shutdown,
+		Menu:             customMenu,
 		Bind: []interface{}{
 			app,
 			configStore,

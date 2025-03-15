@@ -343,3 +343,13 @@ func (a *App) GetImageFromFolder(path string) (string, error) {
 	// Convert to base64 data uri
 	return "data:image/jpeg;base64," + base64.StdEncoding.EncodeToString(imageData), nil
 }
+
+func (a *App) selectAll() {
+	runtime.EventsEmit(a.ctx, "select-all")
+	runtime.LogDebug(a.ctx, "SelectAll event emitted")
+}
+
+func (a *App) selectNone() {
+	runtime.EventsEmit(a.ctx, "deselect-all")
+	runtime.LogDebug(a.ctx, "DeselectAll event emitted")
+}

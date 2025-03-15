@@ -17,7 +17,7 @@ import {
 	ListFiles,
 	PictureDir,
 } from '../wailsjs/go/main/App';
-import type { main } from '../wailsjs/go/models';
+import { type main, runtime } from '../wailsjs/go/models';
 import { OptionsForm } from './components/OptionsForm/OptionsForm';
 import { SlideList } from './components/SlideList/SlideList';
 import { jpegPreviewSizes, subFolderOptions } from './constants';
@@ -28,6 +28,7 @@ import type { FileInfo } from './types/File';
 import { getDngArgs } from './utils/getDngArgs';
 
 import './App.css';
+import { EventsOff, EventsOn } from '../wailsjs/runtime';
 
 interface FormValues {
 	// options form
@@ -47,14 +48,21 @@ interface FormValues {
 function App() {
 	// const store = new Store('photo-importer.settings.json');
 	const [files, setFiles] = useState<main.FileInfo[]>([]);
-	const { extractedThumbnails, selected, setExtractedThumbnails } =
-		usePhotosStore(
-			useShallow((state) => ({
-				selected: state.selected,
-				extractedThumbnails: state.extractedThumbnails,
-				setExtractedThumbnails: state.setExtractedThumbnails,
-			})),
-		);
+	const {
+		extractedThumbnails,
+		selected,
+		setExtractedThumbnails,
+		setSelectedAll,
+		setSelectNone,
+	} = usePhotosStore(
+		useShallow((state) => ({
+			selected: state.selected,
+			setSelectedAll: state.setSelectedAll,
+			setSelectNone: state.setSelectNone,
+			extractedThumbnails: state.extractedThumbnails,
+			setExtractedThumbnails: state.setExtractedThumbnails,
+		})),
+	);
 
 	const { data: config } = useConfigStoreQuery();
 	const { data: env } = useGetEnvQuery();
@@ -74,6 +82,19 @@ function App() {
 			embedOriginalRawFile: config?.embedOriginalRawFile ?? false,
 		},
 	});
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+	useEffect(() => {
+		// Register the event listener
+		EventsOn('select-all', () => setSelectedAll());
+		EventsOn('deselect-all', () => setSelectNone());
+
+		// Cleanup the event listener on component unmount
+		return () => {
+			EventsOff('select-all', '');
+			EventsOff('deselect-all', '');
+		};
+	}, []);
 
 	useEffect(() => {
 		(async () => {

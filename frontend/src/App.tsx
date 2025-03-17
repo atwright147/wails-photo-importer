@@ -81,18 +81,26 @@ function App() {
 		},
 	});
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		// Register the event listener
-		EventsOn('select-all', () => setSelectedAll());
-		EventsOn('deselect-all', () => setSelectNone());
+		const unsubscribeSelectAll = EventsOn('select-all', () => setSelectedAll());
+		const unsubscribeSelectNone = EventsOn('deselect-all', () =>
+			setSelectNone(),
+		);
+		const unsubscribeImportSelected = EventsOn('import-selected', () => {
+			copyOrConvertFile(selected.map((file) => file.original_path));
+		});
 
 		// Cleanup the event listener on component unmount
 		return () => {
-			EventsOff('select-all', '');
-			EventsOff('deselect-all', '');
+			unsubscribeSelectAll();
+			unsubscribeSelectNone();
+			unsubscribeImportSelected();
+			EventsOff('select-all');
+			EventsOff('deselect-all');
+			EventsOff('import-selected');
 		};
-	}, []);
+	}, [selected, setSelectedAll, setSelectNone]);
 
 	useEffect(() => {
 		(async () => {

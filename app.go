@@ -428,7 +428,7 @@ func (a *App) selectNone() {
 }
 
 func (a *App) importSelected() {
-	runtime.EventsEmit(a.ctx, "import")
+	runtime.EventsEmit(a.ctx, "import-selected")
 	runtime.LogDebug(a.ctx, "Import event emitted")
 }
 

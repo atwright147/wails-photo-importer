@@ -14,6 +14,7 @@ export interface State {
 	removeSelected: (ids: string | string[]) => void;
 	setSelectedAll: () => void;
 	setSelectNone: () => void;
+	invert: () => void;
 	setExtractedThumbnails: (thumbnails: ImageInfo[]) => void;
 }
 
@@ -64,6 +65,14 @@ export const usePhotosStore = create<State>()(
 		},
 		setSelectNone: () =>
 			set({ selected: [] }, false, `${STORE_NAME}/setSelectNone`),
+		invert: () => {
+			const { extractedThumbnails, selected } = get();
+			const selectedIds = selected.map((item) => item.hash);
+			const newSelected = extractedThumbnails.filter(
+				(item) => !selectedIds.includes(item.hash),
+			);
+			set({ selected: newSelected }, false, `${STORE_NAME}/invert`);
+		},
 		setExtractedThumbnails: (thumbnails) =>
 			set(
 				{ extractedThumbnails: thumbnails },

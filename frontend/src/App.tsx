@@ -52,11 +52,13 @@ function App() {
 		setExtractedThumbnails,
 		setSelectedAll,
 		setSelectNone,
+		invert,
 	} = usePhotosStore(
 		useShallow((state) => ({
 			selected: state.selected,
 			setSelectedAll: state.setSelectedAll,
 			setSelectNone: state.setSelectNone,
+			invert: state.invert,
 			extractedThumbnails: state.extractedThumbnails,
 			setExtractedThumbnails: state.setExtractedThumbnails,
 		})),
@@ -87,6 +89,7 @@ function App() {
 		const unsubscribeSelectNone = EventsOn('deselect-all', () =>
 			setSelectNone(),
 		);
+		const unsubscribeInvert = EventsOn('invert', () => invert());
 		const unsubscribeImportSelected = EventsOn('import-selected', () => {
 			copyOrConvertFile(selected.map((file) => file.original_path));
 		});
@@ -95,12 +98,14 @@ function App() {
 		return () => {
 			unsubscribeSelectAll();
 			unsubscribeSelectNone();
+			unsubscribeInvert();
 			unsubscribeImportSelected();
 			EventsOff('select-all');
 			EventsOff('deselect-all');
+			EventsOff('invert');
 			EventsOff('import-selected');
 		};
-	}, [selected, setSelectedAll, setSelectNone]);
+	}, [invert, selected, setSelectedAll, setSelectNone]);
 
 	useEffect(() => {
 		(async () => {

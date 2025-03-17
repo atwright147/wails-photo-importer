@@ -427,6 +427,11 @@ func (a *App) selectNone() {
 	runtime.LogDebug(a.ctx, "DeselectAll event emitted")
 }
 
+func (a *App) invert() {
+	runtime.EventsEmit(a.ctx, "invert")
+	runtime.LogDebug(a.ctx, "Invert selection event emitted")
+}
+
 func (a *App) importSelected() {
 	runtime.EventsEmit(a.ctx, "import-selected")
 	runtime.LogDebug(a.ctx, "Import event emitted")

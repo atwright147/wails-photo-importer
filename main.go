@@ -49,6 +49,9 @@ func main() {
 	selectMenu.AddText("Select None", keys.CmdOrCtrl("d"), func(_ *menu.CallbackData) {
 		app.selectNone()
 	})
+	selectMenu.AddText("Invert", keys.CmdOrCtrl("i"), func(_ *menu.CallbackData) {
+		app.invert()
+	})
 	customMenu.Append(menu.WindowMenu())
 
 	if isMacOS {

@@ -45,10 +45,11 @@ export const OptionsForm: FC = (): JSX.Element => {
 	const { data: isDngConverterAvailable } = useIsDngConverterAvailableQuery();
 	const { mutate: saveConfig } = useConfigStoreMutation();
 	const { handleSubmit, control, getValues, setValue } = useFormContext();
-	const { setSelectedAll, setSelectNone } = usePhotosStore(
+	const { setSelectedAll, setSelectNone, invert } = usePhotosStore(
 		useShallow((store) => ({
 			setSelectedAll: store.setSelectedAll,
 			setSelectNone: store.setSelectNone,
+			invert: store.invert,
 		})),
 	);
 
@@ -140,6 +141,11 @@ export const OptionsForm: FC = (): JSX.Element => {
 	const handleSelectNone = () => {
 		console.info('handleSelectNone');
 		setSelectNone();
+	};
+
+	const handleSelectInvert = () => {
+		console.info('handleSelectInvert');
+		invert();
 	};
 
 	const handleFocus = () => refetchDisks();
@@ -312,6 +318,14 @@ export const OptionsForm: FC = (): JSX.Element => {
 							onPress={handleSelectNone}
 						>
 							Select None
+						</Button>
+
+						<Button
+							type="button"
+							variant="secondary"
+							onPress={handleSelectInvert}
+						>
+							Invert Selection
 						</Button>
 					</Flex>
 				</Fieldset>

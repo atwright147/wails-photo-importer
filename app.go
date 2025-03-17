@@ -195,16 +195,21 @@ func (a *App) GetShotDate(filePath string) (string, error) {
 // TODO: fetch all args from the settings file
 func (a *App) CopyOrConvert(files []string, destination string, dngArgs string) error {
 	configState := a.GetConfig()
+	runtime.LogInfof(a.ctx, "Starting import of %d files to %s", len(files), destination)
 
 	for _, file := range files {
+		runtime.LogDebugf(a.ctx, "Processing file: %s", file)
+
 		shotDate, err := a.GetShotDate(file)
 		if err != nil {
+			runtime.LogErrorf(a.ctx, "Failed to get shot date for %s: %v", file, err)
 			return err
 		}
 
 		destDir := filepath.Join(destination, formatDateFolder(shotDate, configState.CreateSubFoldersPattern))
 		err = os.MkdirAll(destDir, 0755)
 		if err != nil {
+			runtime.LogErrorf(a.ctx, "Failed to create directory %s: %v", destDir, err)
 			return fmt.Errorf("failed to create destination directory: %v", err)
 		}
 
@@ -212,34 +217,39 @@ func (a *App) CopyOrConvert(files []string, destination string, dngArgs string) 
 			cmd := exec.Command("/Applications/Adobe DNG Converter.app/Contents/MacOS/Adobe DNG Converter",
 				"-mp", "-d", destDir, file)
 
-			// Add additional arguments if provided
 			if dngArgs != "" {
 				cmd.Args = append(cmd.Args, strings.Split(dngArgs, " ")...)
 			}
 
+			runtime.LogDebugf(a.ctx, "Converting to DNG: %s", cmd.String())
 			output, err := cmd.CombinedOutput()
 			if err != nil {
+				runtime.LogErrorf(a.ctx, "DNG conversion failed for %s: %v", file, err)
 				return fmt.Errorf("DNG Converter failed: %v, command: %s, output: %s", err, cmd.String(), string(output))
 			}
+			runtime.LogDebugf(a.ctx, "DNG conversion completed for: %s", file)
 		} else {
-			// Copy the file
 			filename := filepath.Base(file)
 			destPath := filepath.Join(destDir, filename)
 
+			runtime.LogDebugf(a.ctx, "Copying file to: %s", destPath)
 			err = copyFile(file, destPath)
 			if err != nil {
+				runtime.LogErrorf(a.ctx, "Failed to copy %s: %v", file, err)
 				return fmt.Errorf("failed to copy file: %v", err)
 			}
 		}
 
-		// Delete original if requested
 		if configState.DeleteOriginal {
+			runtime.LogDebugf(a.ctx, "Deleting original file: %s", file)
 			if err := os.Remove(file); err != nil {
+				runtime.LogErrorf(a.ctx, "Failed to delete original file %s: %v", file, err)
 				return fmt.Errorf("failed to delete original file: %v", err)
 			}
 		}
 	}
 
+	runtime.LogInfof(a.ctx, "Successfully processed %d files", len(files))
 	return nil
 }
 

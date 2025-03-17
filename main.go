@@ -21,8 +21,6 @@ var assets embed.FS
 //go:embed build/appicon.png
 var icon []byte
 
-const APP_NAME = "Photo Importer"
-
 func main() {
 	// Create an instance of the app structure
 	app := NewApp()
@@ -43,9 +41,14 @@ func main() {
 		// Call a bound Go method that will execute JavaScript code
 		app.selectAll()
 	})
-	fileMenu.AddText("Deselect All", keys.CmdOrCtrl("d"), func(_ *menu.CallbackData) {
+	fileMenu.AddText("Select None", keys.CmdOrCtrl("d"), func(_ *menu.CallbackData) {
 		// Call a bound Go method that will execute JavaScript code
 		app.selectNone()
+	})
+	fileMenu.AddSeparator()
+	fileMenu.AddText("Import", keys.CmdOrCtrl("i"), func(_ *menu.CallbackData) {
+		// Call a bound Go method that will execute JavaScript code
+		app.importSelected()
 	})
 
 	customMenu.Append(menu.EditMenu())

@@ -172,23 +172,13 @@ function App() {
 	};
 
 	const copyOrConvertFile = async (
-		sources: string[],
+		files: string[],
 		destination: string,
-		dateFormat: string,
-		useDngConverter: boolean,
-		deleteOriginal: boolean,
 		args: string,
 	): Promise<void> => {
-		console.info('copyOrConvertFile', sources, destination, useDngConverter);
+		console.info('copyOrConvertFile', files, destination, args);
 		try {
-			await CopyOrConvert(
-				sources,
-				destination,
-				dateFormat,
-				useDngConverter,
-				deleteOriginal,
-				args,
-			);
+			await CopyOrConvert(files, destination, args);
 			console.log('Operation successful');
 		} catch (error) {
 			console.error('Operation failed', error);
@@ -252,10 +242,6 @@ function App() {
 									copyOrConvertFile(
 										selected.map((file) => file.original_path),
 										formValues.location ?? '',
-										formValues.createSubFoldersPattern ??
-											subFolderOptions[2].id,
-										formValues.convertToDng ?? false,
-										formValues.deleteOriginal ?? false,
 										getDngArgs({
 											jpegPreviewSize: formValues.jpegPreviewSize ?? '',
 											compressedLossless:

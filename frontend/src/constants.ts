@@ -1,5 +1,3 @@
-export const APP_NAME = 'Photo Importer';
-export const APP_IDENTIFIER = 'photo-importer';
 export const CONFIG_STORE_FILENAME = 'config.json';
 
 interface PickerOption {

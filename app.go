@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -13,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	wailsconfigstore "github.com/AndreiTelteu/wails-configstore"
 	"github.com/adrg/xdg"
 	"github.com/cespare/xxhash"
 	"github.com/wailsapp/mimetype"
@@ -23,12 +25,21 @@ var exiftool_path string
 
 // App struct
 type App struct {
-	ctx context.Context
+	ctx         context.Context
+	configStore *wailsconfigstore.ConfigStore
 }
 
 // NewApp creates a new App application struct
 func NewApp() *App {
-	return &App{}
+	configStore, err := wailsconfigstore.NewConfigStore("PhotoImporter")
+
+	if err != nil {
+		log.Fatalf("could not initialize the config store: %v\n", err)
+	}
+
+	return &App{
+		configStore: configStore,
+	}
 }
 
 // startup is called when the app starts. The context is saved
@@ -72,6 +83,18 @@ type ThumbnailResponse struct {
 	ThumbnailPath string `json:"thumbnail_path"`
 	OriginalPath  string `json:"original_path"`
 	Hash          string `json:"hash"`
+}
+
+type Config struct {
+	SourceDisk              string `json:"sourceDisk"`
+	Location                string `json:"location"`
+	CreateSubFoldersPattern string `json:"createSubFoldersPattern"`
+	ConvertToDng            bool   `json:"convertToDng"`
+	DeleteOriginal          bool   `json:"deleteOriginal"`
+	JpegPreviewSize         string `json:"jpegPreviewSize"`
+	CompressedLossless      bool   `json:"compressedLossless"`
+	ImageConversionMethod   string `json:"imageConversionMethod"`
+	EmbedOriginalRawFile    bool   `json:"embedOriginalRawFile"`
 }
 
 func (a *App) ListFiles(drivePath string) ([]FileInfo, error) {
@@ -151,7 +174,7 @@ func formatDateFolder(shotDate string, formatArg string) string {
 }
 
 func (a *App) GetShotDate(filePath string) (string, error) {
-	cmd := exec.Command("exiftool", "-DateTimeOriginal", "-s3", filePath)
+	cmd := exec.Command(exiftool_path, "-DateTimeOriginal", "-s3", filePath)
 	output, err := cmd.Output()
 	if err != nil {
 		return "", fmt.Errorf("failed to execute exiftool: %v", err)
@@ -168,26 +191,30 @@ func (a *App) GetShotDate(filePath string) (string, error) {
 	return "", fmt.Errorf("failed to extract shot date")
 }
 
-func (a *App) CopyOrConvert(sources []string, destination string, dateFormat string, useDNGConverter bool, deleteOriginal bool, args string) error {
-	for _, source := range sources {
-		shotDate, err := a.GetShotDate(source)
+// TODO: rename to import
+// TODO: fetch all args from the settings file
+func (a *App) CopyOrConvert(files []string, destination string, dngArgs string) error {
+	configState := a.GetConfig()
+
+	for _, file := range files {
+		shotDate, err := a.GetShotDate(file)
 		if err != nil {
 			return err
 		}
 
-		destDir := filepath.Join(destination, formatDateFolder(shotDate, dateFormat))
+		destDir := filepath.Join(destination, formatDateFolder(shotDate, configState.CreateSubFoldersPattern))
 		err = os.MkdirAll(destDir, 0755)
 		if err != nil {
 			return fmt.Errorf("failed to create destination directory: %v", err)
 		}
 
-		if useDNGConverter {
+		if configState.ConvertToDng {
 			cmd := exec.Command("/Applications/Adobe DNG Converter.app/Contents/MacOS/Adobe DNG Converter",
-				"-mp", "-d", destDir, source)
+				"-mp", "-d", destDir, file)
 
 			// Add additional arguments if provided
-			if args != "" {
-				cmd.Args = append(cmd.Args, strings.Split(args, " ")...)
+			if dngArgs != "" {
+				cmd.Args = append(cmd.Args, strings.Split(dngArgs, " ")...)
 			}
 
 			output, err := cmd.CombinedOutput()
@@ -196,18 +223,18 @@ func (a *App) CopyOrConvert(sources []string, destination string, dateFormat str
 			}
 		} else {
 			// Copy the file
-			filename := filepath.Base(source)
+			filename := filepath.Base(file)
 			destPath := filepath.Join(destDir, filename)
 
-			err = copyFile(source, destPath)
+			err = copyFile(file, destPath)
 			if err != nil {
 				return fmt.Errorf("failed to copy file: %v", err)
 			}
 		}
 
 		// Delete original if requested
-		if deleteOriginal {
-			if err := os.Remove(source); err != nil {
+		if configState.DeleteOriginal {
+			if err := os.Remove(file); err != nil {
 				return fmt.Errorf("failed to delete original file: %v", err)
 			}
 		}
@@ -352,4 +379,26 @@ func (a *App) selectAll() {
 func (a *App) selectNone() {
 	runtime.EventsEmit(a.ctx, "deselect-all")
 	runtime.LogDebug(a.ctx, "DeselectAll event emitted")
+}
+
+func (a *App) importSelected() {
+	runtime.EventsEmit(a.ctx, "import")
+	runtime.LogDebug(a.ctx, "Import event emitted")
+}
+
+func (a *App) GetConfig() *Config {
+	data, err := a.configStore.Get(CONFIG_STORE_FILENAME, "")
+	if err != nil {
+		fmt.Println("could not read the config file:", err)
+		return nil
+	}
+
+	var configState Config
+	err = json.Unmarshal([]byte(data), &configState)
+	if err != nil {
+		fmt.Println("could not parse config data:", err)
+		return nil
+	}
+
+	return &configState
 }

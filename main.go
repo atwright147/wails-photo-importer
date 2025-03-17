@@ -31,27 +31,24 @@ func main() {
 		return
 	}
 
-	// menu
 	isMacOS := runtime.GOOS == "darwin"
+
 	customMenu := menu.NewMenu()
 
-	// Create application menu
 	fileMenu := customMenu.AddSubmenu("File")
-	fileMenu.AddText("Select All", keys.CmdOrCtrl("a"), func(_ *menu.CallbackData) {
-		// Call a bound Go method that will execute JavaScript code
-		app.selectAll()
-	})
-	fileMenu.AddText("Select None", keys.CmdOrCtrl("d"), func(_ *menu.CallbackData) {
-		// Call a bound Go method that will execute JavaScript code
-		app.selectNone()
-	})
-	fileMenu.AddSeparator()
 	fileMenu.AddText("Import", keys.CmdOrCtrl("i"), func(_ *menu.CallbackData) {
-		// Call a bound Go method that will execute JavaScript code
 		app.importSelected()
 	})
 
 	customMenu.Append(menu.EditMenu())
+
+	selectMenu := customMenu.AddSubmenu("Select")
+	selectMenu.AddText("Select All", keys.CmdOrCtrl("a"), func(_ *menu.CallbackData) {
+		app.selectAll()
+	})
+	selectMenu.AddText("Select None", keys.CmdOrCtrl("d"), func(_ *menu.CallbackData) {
+		app.selectNone()
+	})
 	customMenu.Append(menu.WindowMenu())
 
 	if isMacOS {

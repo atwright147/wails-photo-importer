@@ -191,11 +191,46 @@ func (a *App) GetShotDate(filePath string) (string, error) {
 	return "", fmt.Errorf("failed to extract shot date")
 }
 
+func (a *App) GetDngArgs() []string {
+	configState := a.GetConfig()
+
+	var dngArgs []string
+
+	switch configState.JpegPreviewSize {
+	case "fullSize":
+		dngArgs = append(dngArgs, "-p2")
+
+	case "medium":
+		dngArgs = append(dngArgs, "-p1")
+
+	default:
+		dngArgs = append(dngArgs, "-p0")
+	}
+
+	if configState.CompressedLossless {
+		dngArgs = append(dngArgs, "-c")
+	} else {
+		dngArgs = append(dngArgs, "-u")
+	}
+
+	if configState.ImageConversionMethod == "linear" {
+		dngArgs = append(dngArgs, "-l")
+	}
+
+	if configState.EmbedOriginalRawFile {
+		dngArgs = append(dngArgs, "-e")
+	}
+
+	return dngArgs
+}
+
 // TODO: rename to import
 // TODO: fetch all args from the settings file
-func (a *App) CopyOrConvert(files []string, destination string, dngArgs string) error {
+func (a *App) CopyOrConvert(files []string) error {
 	configState := a.GetConfig()
-	runtime.LogInfof(a.ctx, "Starting import of %d files to %s", len(files), destination)
+	runtime.LogInfof(a.ctx, "Starting import of %d files to %s", len(files), configState.Location)
+
+	dngArgs := a.GetDngArgs()
 
 	for _, file := range files {
 		runtime.LogDebugf(a.ctx, "Processing file: %s", file)
@@ -206,7 +241,7 @@ func (a *App) CopyOrConvert(files []string, destination string, dngArgs string) 
 			return err
 		}
 
-		destDir := filepath.Join(destination, formatDateFolder(shotDate, configState.CreateSubFoldersPattern))
+		destDir := filepath.Join(configState.Location, formatDateFolder(shotDate, configState.CreateSubFoldersPattern))
 		err = os.MkdirAll(destDir, 0755)
 		if err != nil {
 			runtime.LogErrorf(a.ctx, "Failed to create directory %s: %v", destDir, err)
@@ -217,8 +252,9 @@ func (a *App) CopyOrConvert(files []string, destination string, dngArgs string) 
 			cmd := exec.Command("/Applications/Adobe DNG Converter.app/Contents/MacOS/Adobe DNG Converter",
 				"-mp", "-d", destDir, file)
 
-			if dngArgs != "" {
-				cmd.Args = append(cmd.Args, strings.Split(dngArgs, " ")...)
+			if len(dngArgs) > 0 {
+				runtime.LogDebugf(a.ctx, "DNG arguments: %v", dngArgs)
+				cmd.Args = append(cmd.Args, dngArgs...)
 			}
 
 			runtime.LogDebugf(a.ctx, "Converting to DNG: %s", cmd.String())

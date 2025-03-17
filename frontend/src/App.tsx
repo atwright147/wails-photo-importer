@@ -7,7 +7,7 @@ import {
 	View,
 	defaultTheme,
 } from '@adobe/react-spectrum';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FormProvider, useForm, useWatch } from 'react-hook-form';
 import { useShallow } from 'zustand/react/shallow';
 
@@ -17,7 +17,8 @@ import {
 	ListFiles,
 	PictureDir,
 } from '../wailsjs/go/main/App';
-import { type main, runtime } from '../wailsjs/go/models';
+import type { main } from '../wailsjs/go/models';
+import { EventsOff, EventsOn } from '../wailsjs/runtime';
 import { OptionsForm } from './components/OptionsForm/OptionsForm';
 import { SlideList } from './components/SlideList/SlideList';
 import { jpegPreviewSizes, subFolderOptions } from './constants';
@@ -25,10 +26,8 @@ import { useConfigStoreQuery } from './hooks/useConfigStoreQuery';
 import { useGetEnvQuery } from './hooks/useGetEnvQuery';
 import { usePhotosStore } from './stores/photos.store';
 import type { FileInfo } from './types/File';
-import { getDngArgs } from './utils/getDngArgs';
 
 import './App.css';
-import { EventsOff, EventsOn } from '../wailsjs/runtime';
 
 interface FormValues {
 	// options form
@@ -46,7 +45,6 @@ interface FormValues {
 }
 
 function App() {
-	// const store = new Store('photo-importer.settings.json');
 	const [files, setFiles] = useState<main.FileInfo[]>([]);
 	const {
 		extractedThumbnails,
@@ -171,14 +169,10 @@ function App() {
 		}
 	};
 
-	const copyOrConvertFile = async (
-		files: string[],
-		destination: string,
-		args: string,
-	): Promise<void> => {
-		console.info('copyOrConvertFile', files, destination, args);
+	const copyOrConvertFile = async (files: string[]): Promise<void> => {
+		console.info('copyOrConvertFile', files);
 		try {
-			await CopyOrConvert(files, destination, args);
+			await CopyOrConvert(files);
 			console.log('Operation successful');
 		} catch (error) {
 			console.error('Operation failed', error);
@@ -239,19 +233,7 @@ function App() {
 								variant="cta"
 								type="button"
 								onPress={() =>
-									copyOrConvertFile(
-										selected.map((file) => file.original_path),
-										formValues.location ?? '',
-										getDngArgs({
-											jpegPreviewSize: formValues.jpegPreviewSize ?? '',
-											compressedLossless:
-												formValues.compressedLossless ?? false,
-											imageConversionMethod:
-												formValues.imageConversionMethod ?? '',
-											embedOriginalRawFile:
-												formValues.embedOriginalRawFile ?? false,
-										}),
-									)
+									copyOrConvertFile(selected.map((file) => file.original_path))
 								}
 							>
 								Import

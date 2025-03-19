@@ -306,26 +306,33 @@ export const OptionsForm: FC = (): JSX.Element => {
 					</Flex>
 				</Fieldset>
 
-				<Fieldset legend="Actions">
-					<Flex gap="size-100" direction="column">
-						<Button type="button" variant="secondary" onPress={handleSelectAll}>
-							Select All
+				<Fieldset legend="Selection">
+					<Flex gap="size-100" direction="row">
+						<Button
+							type="button"
+							variant="secondary"
+							onPress={handleSelectAll}
+							flexGrow={1}
+						>
+							All
 						</Button>
 
 						<Button
 							type="button"
 							variant="secondary"
 							onPress={handleSelectNone}
+							flexGrow={1}
 						>
-							Select None
+							None
 						</Button>
 
 						<Button
 							type="button"
 							variant="secondary"
 							onPress={handleSelectInvert}
+							flexGrow={1}
 						>
-							Invert Selection
+							Invert
 						</Button>
 					</Flex>
 				</Fieldset>

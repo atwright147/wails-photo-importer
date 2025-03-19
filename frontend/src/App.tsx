@@ -18,7 +18,7 @@ import {
 	PictureDir,
 } from '../wailsjs/go/main/App';
 import type { main } from '../wailsjs/go/models';
-import { EventsOff, EventsOn } from '../wailsjs/runtime';
+import { EventsOff, EventsOn, Quit } from '../wailsjs/runtime';
 import { OptionsForm } from './components/OptionsForm/OptionsForm';
 import { SlideList } from './components/SlideList/SlideList';
 import { jpegPreviewSizes, subFolderOptions } from './constants';
@@ -176,7 +176,7 @@ function App() {
 
 	const handleClose = async (): Promise<void> => {
 		try {
-			await process.exit(0);
+			await Quit();
 		} catch (err) {
 			console.info(err);
 		}

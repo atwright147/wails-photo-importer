@@ -39,6 +39,9 @@ func main() {
 	fileMenu.AddText("Import", keys.CmdOrCtrl("i"), func(_ *menu.CallbackData) {
 		app.importSelected()
 	})
+	fileMenu.AddText("Clear Cache", keys.CmdOrCtrl("c"), func(_ *menu.CallbackData) {
+		app.ClearCache()
+	})
 
 	customMenu.Append(menu.EditMenu())
 

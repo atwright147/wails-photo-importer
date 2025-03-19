@@ -453,3 +453,18 @@ func (a *App) GetConfig() *Config {
 
 	return &configState
 }
+
+func (a *App) ClearCache() error {
+	thumbnailDir := xdg.CacheHome
+	thumbnailDir = filepath.Join(thumbnailDir, "PhotoImporter", "thumbnails")
+
+	runtime.LogDebugf(a.ctx, "Clear cache: %s", thumbnailDir)
+
+	err := os.RemoveAll(thumbnailDir)
+	if err != nil {
+		runtime.LogDebugf(a.ctx, "Clear cache error: %v", err)
+		return err
+	}
+
+	return nil
+}

@@ -14,12 +14,20 @@
 				},
 				"useHookAtTopLevel": {
 					"level": "error"
-				}
+				},
+				"noUnusedVariables": "error",
+				"noUnusedImports": "error"
 			}
 		}
 	},
 	"formatter": {
-		"ignore": [".vscode", "tsconfig*.json", "package*.json", "wailsjs", "build"],
+		"ignore": [
+			".vscode",
+			"tsconfig*.json",
+			"package*.json",
+			"wailsjs",
+			"build"
+		],
 		"enabled": true,
 		"indentStyle": "tab",
 		"indentWidth": 2

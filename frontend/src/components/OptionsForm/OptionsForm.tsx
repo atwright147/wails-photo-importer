@@ -26,10 +26,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { OpenDirectoryDialog } from '../../../wailsjs/go/main/App';
 import { BrowserOpenURL } from '../../../wailsjs/runtime';
 import { jpegPreviewSizes, subFolderOptions } from '../../constants';
-import {
-	useConfigStoreMutation,
-	useConfigStoreQuery,
-} from '../../hooks/useConfigStoreQuery';
+import { useConfigStoreMutation } from '../../hooks/useConfigStoreQuery';
 import { useDisksQuery } from '../../hooks/useDisksQuery';
 import { useIsDngConverterAvailableQuery } from '../../hooks/useIsDngConverterAvailableQuery';
 import { usePhotosStore } from '../../stores/photos.store';
@@ -54,7 +51,7 @@ export const OptionsForm: FC = (): JSX.Element => {
 	);
 
 	// @ts-ignore
-	const onSubmit = (data) => {
+	const onSubmit = () => {
 		// Call your API here...
 	};
 

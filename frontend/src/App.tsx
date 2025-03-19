@@ -174,11 +174,11 @@ function App() {
 		})();
 	}, [formValues.sourceDisk]);
 
-	const handleClose = async (): Promise<void> => {
+	const handleClose = (): void => {
 		try {
-			await Quit();
+			Quit();
 		} catch (err) {
-			console.info(err);
+			console.error(err);
 		}
 	};
 
@@ -186,7 +186,7 @@ function App() {
 		console.info('copyOrConvertFile', files);
 		try {
 			await CopyOrConvert(files);
-			console.log('Operation successful');
+			console.info('Operation successful');
 		} catch (error) {
 			console.error('Operation failed', error);
 		}

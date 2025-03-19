@@ -19,7 +19,7 @@ import {
 import { DevTool } from '@hookform/devtools';
 import IconFolder from '@spectrum-icons/workflow/Folder';
 import IconRefresh from '@spectrum-icons/workflow/Refresh';
-import { type FC, useEffect, useMemo, useState } from 'react';
+import { type FC, useMemo, useState } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { useShallow } from 'zustand/react/shallow';
 
@@ -52,8 +52,6 @@ export const OptionsForm: FC = (): JSX.Element => {
 			invert: store.invert,
 		})),
 	);
-
-	const { data: store } = useConfigStoreQuery();
 
 	// @ts-ignore
 	const onSubmit = (data) => {

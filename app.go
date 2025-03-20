@@ -235,17 +235,21 @@ func (a *App) CopyOrConvert(files []string) error {
 	for _, file := range files {
 		runtime.LogDebugf(a.ctx, "Processing file: %s", file)
 
-		shotDate, err := a.GetShotDate(file)
-		if err != nil {
-			runtime.LogErrorf(a.ctx, "Failed to get shot date for %s: %v", file, err)
-			return err
-		}
+		destDir := configState.Location
 
-		destDir := filepath.Join(configState.Location, formatDateFolder(shotDate, configState.CreateSubFoldersPattern))
-		err = os.MkdirAll(destDir, 0755)
-		if err != nil {
-			runtime.LogErrorf(a.ctx, "Failed to create directory %s: %v", destDir, err)
-			return fmt.Errorf("failed to create destination directory: %v", err)
+		if configState.CreateSubFoldersPattern != "none" && configState.CreateSubFoldersPattern != "custom" {
+			shotDate, err := a.GetShotDate(file)
+			if err != nil {
+				runtime.LogErrorf(a.ctx, "Failed to get shot date for %s: %v", file, err)
+				return err
+			}
+
+			destDir = filepath.Join(configState.Location, formatDateFolder(shotDate, configState.CreateSubFoldersPattern))
+			err = os.MkdirAll(destDir, 0755)
+			if err != nil {
+				runtime.LogErrorf(a.ctx, "Failed to create directory %s: %v", destDir, err)
+				return fmt.Errorf("failed to create destination directory: %v", err)
+			}
 		}
 
 		if configState.ConvertToDng {
@@ -269,7 +273,7 @@ func (a *App) CopyOrConvert(files []string) error {
 			destPath := filepath.Join(destDir, filename)
 
 			runtime.LogDebugf(a.ctx, "Copying file to: %s", destPath)
-			err = copyFile(file, destPath)
+			err := copyFile(file, destPath)
 			if err != nil {
 				runtime.LogErrorf(a.ctx, "Failed to copy %s: %v", file, err)
 				return fmt.Errorf("failed to copy file: %v", err)

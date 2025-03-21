@@ -7,6 +7,7 @@ export interface Config {
 	compressedLossless?: boolean;
 	convertToDng?: boolean;
 	createSubFoldersPattern?: string;
+	customSubFolderName?: string;
 	deleteOriginal?: boolean;
 	embedOriginalRawFile?: boolean;
 	imageConversionMethod?: string;

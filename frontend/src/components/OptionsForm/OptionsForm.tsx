@@ -247,6 +247,31 @@ export const OptionsForm: FC = (): JSX.Element => {
 								</Picker>
 							)}
 						/>
+
+						<Controller
+							control={control}
+							name="customSubFolderName"
+							rules={{ required: 'Custom Name is required.' }}
+							render={({
+								field: { name, value, onChange, onBlur, ref },
+								fieldState: { error },
+							}) => (
+								<TextField
+									label="Custom Name"
+									name={name}
+									value={value}
+									isDisabled={getValues('createSubFoldersPattern') !== 'custom'}
+									onChange={(event) =>
+										handleFieldChangeSave(event as string, name, onChange)
+									}
+									onBlur={onBlur}
+									ref={ref}
+									isRequired
+									errorMessage={error?.message}
+									width="100%"
+								/>
+							)}
+						/>
 					</Flex>
 				</Fieldset>
 

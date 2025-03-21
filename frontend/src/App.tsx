@@ -30,18 +30,16 @@ import type { FileInfo } from './types/File';
 import './App.css';
 
 interface FormValues {
-	// options form
-	sourceDisk: string;
-	location: string;
-	createSubFoldersPattern: string;
-	convertToDng: boolean;
-	deleteOriginal: boolean;
-
-	// dng settings form
-	jpegPreviewSize: string;
 	compressedLossless: boolean;
-	imageConversionMethod: string;
+	convertToDng: boolean;
+	createSubFoldersPattern: string;
+	customSubFolderName: string;
+	deleteOriginal: boolean;
 	embedOriginalRawFile: boolean;
+	imageConversionMethod: string;
+	jpegPreviewSize: string;
+	location: string;
+	sourceDisk: string;
 }
 
 function App() {
@@ -69,17 +67,16 @@ function App() {
 
 	const methods = useForm<FormValues>({
 		defaultValues: {
-			sourceDisk: '',
-			location: config?.location ?? '',
+			compressedLossless: config?.compressedLossless ?? true,
+			convertToDng: config?.convertToDng ?? false,
 			createSubFoldersPattern:
 				config?.createSubFoldersPattern ?? subFolderOptions[2].id,
-			convertToDng: config?.convertToDng ?? false,
 			deleteOriginal: config?.deleteOriginal ?? false,
-
-			jpegPreviewSize: config?.jpegPreviewSize ?? jpegPreviewSizes[2].id,
-			compressedLossless: config?.compressedLossless ?? true,
-			imageConversionMethod: config?.imageConversionMethod ?? 'preserve',
 			embedOriginalRawFile: config?.embedOriginalRawFile ?? false,
+			imageConversionMethod: config?.imageConversionMethod ?? 'preserve',
+			jpegPreviewSize: config?.jpegPreviewSize ?? jpegPreviewSizes[2].id,
+			location: config?.location ?? '',
+			sourceDisk: '',
 		},
 	});
 
@@ -111,31 +108,32 @@ function App() {
 		(async () => {
 			const pictureDir = await PictureDir();
 
-			const values = {
-				sourceDisk: '',
-				location: config?.location ?? pictureDir,
+			const values: FormValues = {
+				compressedLossless: config?.compressedLossless ?? true,
+				convertToDng: config?.convertToDng ?? false,
 				createSubFoldersPattern:
 					config?.createSubFoldersPattern ?? subFolderOptions[2].id,
-				convertToDng: config?.convertToDng ?? false,
+				customSubFolderName: config?.customSubFolderName ?? '',
 				deleteOriginal: config?.deleteOriginal ?? false,
-
-				jpegPreviewSize: config?.jpegPreviewSize ?? jpegPreviewSizes[2].id,
-				compressedLossless: config?.compressedLossless ?? true,
-				imageConversionMethod: config?.imageConversionMethod ?? 'preserve',
 				embedOriginalRawFile: config?.embedOriginalRawFile ?? false,
+				imageConversionMethod: config?.imageConversionMethod ?? 'preserve',
+				jpegPreviewSize: config?.jpegPreviewSize ?? jpegPreviewSizes[2].id,
+				location: config?.location ?? pictureDir,
+				sourceDisk: '',
 			};
 
 			methods.reset(values);
 		})();
 	}, [
-		config?.location,
-		config?.createSubFoldersPattern,
-		config?.convertToDng,
-		config?.deleteOriginal,
-		config?.jpegPreviewSize,
 		config?.compressedLossless,
-		config?.imageConversionMethod,
+		config?.convertToDng,
+		config?.createSubFoldersPattern,
+		config?.customSubFolderName,
+		config?.deleteOriginal,
 		config?.embedOriginalRawFile,
+		config?.imageConversionMethod,
+		config?.jpegPreviewSize,
+		config?.location,
 		methods.reset,
 	]);
 

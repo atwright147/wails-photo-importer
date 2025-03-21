@@ -89,6 +89,7 @@ type Config struct {
 	SourceDisk              string `json:"sourceDisk"`
 	Location                string `json:"location"`
 	CreateSubFoldersPattern string `json:"createSubFoldersPattern"`
+	CustomSubFolderName     string `json:"customSubFolderName"`
 	ConvertToDng            bool   `json:"convertToDng"`
 	DeleteOriginal          bool   `json:"deleteOriginal"`
 	JpegPreviewSize         string `json:"jpegPreviewSize"`
@@ -246,6 +247,19 @@ func (a *App) CopyOrConvert(files []string) error {
 
 			destDir = filepath.Join(configState.Location, formatDateFolder(shotDate, configState.CreateSubFoldersPattern))
 			err = os.MkdirAll(destDir, 0755)
+			if err != nil {
+				runtime.LogErrorf(a.ctx, "Failed to create directory %s: %v", destDir, err)
+				return fmt.Errorf("failed to create destination directory: %v", err)
+			}
+		}
+
+		runtime.LogInfo(a.ctx, "CreateSubFoldersPattern: "+configState.CreateSubFoldersPattern)
+		runtime.LogInfo(a.ctx, "CustomSubFolderName: "+configState.CustomSubFolderName)
+
+		if configState.CreateSubFoldersPattern == "custom" && configState.CustomSubFolderName != "" {
+			destDir = filepath.Join(configState.Location, configState.CustomSubFolderName)
+			runtime.LogInfo(a.ctx, "Using custom folder name: "+configState.CustomSubFolderName)
+			err := os.MkdirAll(destDir, 0755)
 			if err != nil {
 				runtime.LogErrorf(a.ctx, "Failed to create directory %s: %v", destDir, err)
 				return fmt.Errorf("failed to create destination directory: %v", err)

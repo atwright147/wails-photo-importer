@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 	"time"
 
@@ -18,7 +19,7 @@ import (
 	"github.com/adrg/xdg"
 	"github.com/cespare/xxhash"
 	"github.com/wailsapp/mimetype"
-	"github.com/wailsapp/wails/v2/pkg/runtime"
+	rt "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 var exiftool_path string
@@ -114,7 +115,7 @@ func (a *App) ListFiles(drivePath string) ([]FileInfo, error) {
 		if !info.IsDir() && isAllowedExtension(path) {
 			mime, err := mimetype.DetectFile(path)
 			if err != nil {
-				runtime.LogErrorf(a.ctx, "error detecting mime type for %q: %v\n", path, err)
+				rt.LogErrorf(a.ctx, "error detecting mime type for %q: %v\n", path, err)
 			}
 
 			files = append(files, FileInfo{
@@ -129,7 +130,7 @@ func (a *App) ListFiles(drivePath string) ([]FileInfo, error) {
 		return nil
 	})
 
-	runtime.LogInfo(a.ctx, fmt.Sprintf("Total files found: %d", len(files)))
+	rt.LogInfo(a.ctx, fmt.Sprintf("Total files found: %d", len(files)))
 
 	return files, err
 }
@@ -229,81 +230,87 @@ func (a *App) GetDngArgs() []string {
 // TODO: fetch all args from the settings file
 func (a *App) CopyOrConvert(files []string) error {
 	configState := a.GetConfig()
-	runtime.LogInfof(a.ctx, "Starting import of %d files to %s", len(files), configState.Location)
+	rt.LogInfof(a.ctx, "Starting import of %d files to %s", len(files), configState.Location)
 
 	dngArgs := a.GetDngArgs()
 
 	for _, file := range files {
-		runtime.LogDebugf(a.ctx, "Processing file: %s", file)
+		rt.LogDebugf(a.ctx, "Processing file: %s", file)
 
 		destDir := configState.Location
 
 		if configState.CreateSubFoldersPattern != "none" && configState.CreateSubFoldersPattern != "custom" {
 			shotDate, err := a.GetShotDate(file)
 			if err != nil {
-				runtime.LogErrorf(a.ctx, "Failed to get shot date for %s: %v", file, err)
+				rt.LogErrorf(a.ctx, "Failed to get shot date for %s: %v", file, err)
 				return err
 			}
 
 			destDir = filepath.Join(configState.Location, formatDateFolder(shotDate, configState.CreateSubFoldersPattern))
 			err = os.MkdirAll(destDir, 0755)
 			if err != nil {
-				runtime.LogErrorf(a.ctx, "Failed to create directory %s: %v", destDir, err)
+				rt.LogErrorf(a.ctx, "Failed to create directory %s: %v", destDir, err)
 				return fmt.Errorf("failed to create destination directory: %v", err)
 			}
 		}
 
-		runtime.LogInfo(a.ctx, "CreateSubFoldersPattern: "+configState.CreateSubFoldersPattern)
-		runtime.LogInfo(a.ctx, "CustomSubFolderName: "+configState.CustomSubFolderName)
+		rt.LogInfo(a.ctx, "CreateSubFoldersPattern: "+configState.CreateSubFoldersPattern)
+		rt.LogInfo(a.ctx, "CustomSubFolderName: "+configState.CustomSubFolderName)
 
 		if configState.CreateSubFoldersPattern == "custom" && configState.CustomSubFolderName != "" {
 			destDir = filepath.Join(configState.Location, configState.CustomSubFolderName)
-			runtime.LogInfo(a.ctx, "Using custom folder name: "+configState.CustomSubFolderName)
+			rt.LogInfo(a.ctx, "Using custom folder name: "+configState.CustomSubFolderName)
 			err := os.MkdirAll(destDir, 0755)
 			if err != nil {
-				runtime.LogErrorf(a.ctx, "Failed to create directory %s: %v", destDir, err)
+				rt.LogErrorf(a.ctx, "Failed to create directory %s: %v", destDir, err)
 				return fmt.Errorf("failed to create destination directory: %v", err)
 			}
 		}
 
 		if configState.ConvertToDng {
-			cmd := exec.Command("/Applications/Adobe DNG Converter.app/Contents/MacOS/Adobe DNG Converter",
-				"-mp", "-d", destDir, file)
+			var cmd *exec.Cmd
+			if runtime.GOOS == "windows" {
+				cmd = exec.Command("C:\\Program Files\\Adobe\\Adobe DNG Converter\\Adobe DNG Converter.exe",
+					"-mp", "-d", destDir, file)
+			} else {
+				cmd = exec.Command("/Applications/Adobe DNG Converter.app/Contents/MacOS/Adobe DNG Converter",
+					"-mp", "-d", destDir, file)
+			}
 
 			if len(dngArgs) > 0 {
-				runtime.LogDebugf(a.ctx, "DNG arguments: %v", dngArgs)
+				rt.LogDebugf(a.ctx, "DNG arguments: %v", dngArgs)
 				cmd.Args = append(cmd.Args, dngArgs...)
 			}
 
-			runtime.LogDebugf(a.ctx, "Converting to DNG: %s", cmd.String())
+			rt.LogDebugf(a.ctx, "Converting to DNG: %s", cmd.String())
 			output, err := cmd.CombinedOutput()
 			if err != nil {
-				runtime.LogErrorf(a.ctx, "DNG conversion failed for %s: %v", file, err)
+				rt.LogErrorf(a.ctx, "DNG conversion failed for %s: %v", file, err)
 				return fmt.Errorf("DNG Converter failed: %v, command: %s, output: %s", err, cmd.String(), string(output))
 			}
-			runtime.LogDebugf(a.ctx, "DNG conversion completed for: %s", file)
+			rt.LogDebugf(a.ctx, "DNG conversion completed for: %s", file)
 		} else {
 			filename := filepath.Base(file)
 			destPath := filepath.Join(destDir, filename)
 
-			runtime.LogDebugf(a.ctx, "Copying file to: %s", destPath)
+			rt.LogDebugf(a.ctx, "Copying file to: %s", destPath)
 			err := copyFile(file, destPath)
 			if err != nil {
-				runtime.LogErrorf(a.ctx, "Failed to copy %s: %v", file, err)
+				rt.LogErrorf(a.ctx, "Failed to copy %s: %v", file, err)
 				return fmt.Errorf("failed to copy file: %v", err)
 			}
 		}
 
 		if configState.DeleteOriginal {
-			runtime.LogDebugf(a.ctx, "Deleting original file: %s", file)
+			rt.LogDebugf(a.ctx, "Deleting original file: %s", file)
 			if err := os.Remove(file); err != nil {
-				runtime.LogErrorf(a.ctx, "Failed to delete original file %s: %v", file, err)
+				rt.LogErrorf(a.ctx, "Failed to delete original file %s: %v", file, err)
 				return fmt.Errorf("failed to delete original file: %v", err)
 			}
 		}
 	}
 
-	runtime.LogInfof(a.ctx, "Successfully processed %d files", len(files))
+	rt.LogInfof(a.ctx, "Successfully processed %d files", len(files))
 	return nil
 }
 
@@ -333,7 +340,7 @@ func (a *App) ExtractThumbnail(path string) (ThumbnailResponse, error) {
 
 	// Check if thumbnail exists
 	if _, err := os.Stat(thumbnailPath); err == nil {
-		runtime.LogErrorf(a.ctx, "thumbnail for %q, with hash %q already exists at %q", path, hash, thumbnailPath)
+		rt.LogErrorf(a.ctx, "thumbnail for %q, with hash %q already exists at %q", path, hash, thumbnailPath)
 
 		return ThumbnailResponse{
 			ThumbnailPath: thumbnailPath,
@@ -352,7 +359,7 @@ func (a *App) ExtractThumbnail(path string) (ThumbnailResponse, error) {
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		runtime.LogErrorf(a.ctx, "exiftool failed: %v, output: %s", err, string(output))
+		rt.LogErrorf(a.ctx, "exiftool failed: %v, output: %s", err, string(output))
 	}
 
 	return ThumbnailResponse{
@@ -389,23 +396,28 @@ func hashFile(filepath string) (string, error) {
 
 func (a *App) IsDNGConverterAvailable() bool {
 	// FIXME: handle Windows too (can't do this in Linux)
-	_, err := os.Stat("/Applications/Adobe DNG Converter.app")
+	var err error
+	if runtime.GOOS == "windows" {
+		_, err = os.Stat("C:\\Program Files\\Adobe\\Adobe DNG Converter\\Adobe DNG Converter.exe")
+	} else {
+		_, err = os.Stat("/Applications/Adobe DNG Converter.app")
+	}
 	return err == nil
 }
 
-func (a *App) GetEnv() runtime.EnvironmentInfo {
-	return runtime.Environment(a.ctx)
+func (a *App) GetEnv() rt.EnvironmentInfo {
+	return rt.Environment(a.ctx)
 }
 
 func (a *App) OpenDirectoryDialog(path string) (string, error) {
 	// Create dialog options
-	options := runtime.OpenDialogOptions{
+	options := rt.OpenDialogOptions{
 		Title:            "Select Folder",
 		DefaultDirectory: path,
 	}
 
 	// Open the directory dialog
-	selectedPath, err := runtime.OpenDirectoryDialog(a.ctx, options)
+	selectedPath, err := rt.OpenDirectoryDialog(a.ctx, options)
 	if err != nil {
 		return "", err
 	}
@@ -436,23 +448,23 @@ func (a *App) GetImageFromFolder(path string) (string, error) {
 }
 
 func (a *App) selectAll() {
-	runtime.EventsEmit(a.ctx, "select-all")
-	runtime.LogDebug(a.ctx, "SelectAll event emitted")
+	rt.EventsEmit(a.ctx, "select-all")
+	rt.LogDebug(a.ctx, "SelectAll event emitted")
 }
 
 func (a *App) selectNone() {
-	runtime.EventsEmit(a.ctx, "deselect-all")
-	runtime.LogDebug(a.ctx, "DeselectAll event emitted")
+	rt.EventsEmit(a.ctx, "deselect-all")
+	rt.LogDebug(a.ctx, "DeselectAll event emitted")
 }
 
 func (a *App) invert() {
-	runtime.EventsEmit(a.ctx, "invert")
-	runtime.LogDebug(a.ctx, "Invert selection event emitted")
+	rt.EventsEmit(a.ctx, "invert")
+	rt.LogDebug(a.ctx, "Invert selection event emitted")
 }
 
 func (a *App) importSelected() {
-	runtime.EventsEmit(a.ctx, "import-selected")
-	runtime.LogDebug(a.ctx, "Import event emitted")
+	rt.EventsEmit(a.ctx, "import-selected")
+	rt.LogDebug(a.ctx, "Import event emitted")
 }
 
 func (a *App) GetConfig() *Config {
@@ -476,11 +488,11 @@ func (a *App) ClearCache() error {
 	thumbnailDir := xdg.CacheHome
 	thumbnailDir = filepath.Join(thumbnailDir, "PhotoImporter", "thumbnails")
 
-	runtime.LogDebugf(a.ctx, "Clear cache: %s", thumbnailDir)
+	rt.LogDebugf(a.ctx, "Clear cache: %s", thumbnailDir)
 
 	err := os.RemoveAll(thumbnailDir)
 	if err != nil {
-		runtime.LogDebugf(a.ctx, "Clear cache error: %v", err)
+		rt.LogDebugf(a.ctx, "Clear cache error: %v", err)
 		return err
 	}
 

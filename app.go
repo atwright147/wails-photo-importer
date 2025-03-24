@@ -57,9 +57,11 @@ func (a *App) startup(ctx context.Context) {
 }
 
 func (a *App) shutdown(ctx context.Context) {
-	// Clean up the extracted exiftool
 	if exiftool_path != "" {
-		os.Remove(exiftool_path)
+		// Clean up the extracted exiftool
+		if err := os.RemoveAll(filepath.Join(exiftool_path, "..")); err != nil {
+			log.Printf("Failed to remove extracted exiftool: %v", err)
+		}
 	}
 }
 

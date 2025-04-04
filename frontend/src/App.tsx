@@ -1,7 +1,12 @@
 import {
 	Button,
+	Content,
+	Dialog,
+	DialogContainer,
+	Divider,
 	Flex,
 	Grid,
+	Heading,
 	Provider,
 	Text,
 	View,
@@ -61,6 +66,7 @@ function App() {
 			setExtractedThumbnails: state.setExtractedThumbnails,
 		})),
 	);
+	const [importing, setImporting] = useState(false);
 
 	const { data: config } = useConfigStoreQuery();
 	const { data: env } = useGetEnvQuery();
@@ -182,12 +188,14 @@ function App() {
 
 	const copyOrConvertFile = async (files: string[]): Promise<void> => {
 		console.info('copyOrConvertFile', files);
+		setImporting(true);
 		try {
 			await CopyOrConvert(files);
 			console.info('Operation successful');
 		} catch (error) {
 			console.error('Operation failed', error);
 		}
+		setImporting(false);
 	};
 
 	return (
@@ -253,6 +261,21 @@ function App() {
 					</Flex>
 				</View>
 			</Grid>
+
+			<DialogContainer isDismissable={false} onDismiss={() => {}}>
+				{importing && (
+					<Dialog>
+						<Heading>Importing…</Heading>
+						<Divider />
+						<Content>
+							<Flex direction="column" gap="size-200">
+								<Text>Importing your selected files</Text>
+								<progress style={{ width: '100%' }} />
+							</Flex>
+						</Content>
+					</Dialog>
+				)}
+			</DialogContainer>
 		</Provider>
 	);
 }

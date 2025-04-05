@@ -43,7 +43,7 @@ func main() {
 		app.ClearCache()
 	})
 
-	customMenu.Append(menu.EditMenu())
+	// customMenu.Append(menu.EditMenu())
 
 	selectMenu := customMenu.AddSubmenu("Select")
 	selectMenu.AddText("Select All", keys.CmdOrCtrl("a"), func(_ *menu.CallbackData) {
